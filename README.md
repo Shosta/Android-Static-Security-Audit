@@ -16,6 +16,7 @@ Run the following commands :
 
 If you find some file twhose name is key try these commands :
 > hexdump ./path/to/.appkey  -vC
+
 > more ./path/to/.appkey 
 
 
@@ -27,9 +28,14 @@ Get the package name of the application if you don't have it.
 Verify the signature : 
 > apksigner verify --verbose Application.apk
 
+> jarsigner -verify -certs -verbose app.apk
+
 and
 
 Move to the META.INF folder and check the signature with openssl : 
 > openssl pkcs7 -inform DER -in CERT.RSA -noout -print_certs -text
+
+Extract CERT.RSA from the package and display the certificate with keytool. 
+> keytool -printcert -file CERT.RSA 
 
 You can then check the type of encryption used (hint, sha1 is no more secure).
