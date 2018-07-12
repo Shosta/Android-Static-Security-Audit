@@ -43,7 +43,7 @@ def main(argv):
     retrieveandsavepackage.create_attacks_folder_tree()
     
     try:
-        opts, args = getopt.getopt(argv, "ha:", ["help", "app-name="])
+        opts, args = getopt.getopt(argv, "hav:i", ["help", "app-name", "verbose", "insecure-logging="])
     except getopt.GetoptError:
         print('Type \'AndroidStaticSecurity.py -h\' for help.')
         sys.exit(2)
@@ -57,6 +57,12 @@ def main(argv):
             #raise Exception('Usage displayed, stop application')
         elif opt in ("-a", "--app-name"):
             app_name = arg
+        elif opt in ("-v", "--verbose"):
+            print("il y a bien v")
+            variables.DISPLAY_VERBOSE = True
+        elif opt == "--insecure-logging":
+            print("Faire uniquement les attaques Insecure Logging.")
+
 
     if app_name == '':
         #Wait for input from user in order to choose which apk to retreive through adb
