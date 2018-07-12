@@ -61,7 +61,7 @@ def repackage_debuggable_application(package_name):
 def sign_apk(package_name):
     print(bcolors.OKGREEN + "Sign the application " + bcolors.ENDC + "using " + bcolors.BOLD + "appium/signapk" + bcolors.ENDC + " tool")
     cmd = "signapk /tmp/Attacks/DebuggablePackage/" + package_name + ".b.apk"
-    output = cmdutils.launchcmdreturnoutput(cmd)
+    output = cmdutils.launchcmdaliasreturnoutput(cmd)
     print(output[0])
 
 def reinstall_app(package_name):
