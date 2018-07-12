@@ -9,6 +9,7 @@ import sys
 import getopt
 import bcolors
 import retrieveandsavepackage
+import repackageapp
 
 
 def usage():
@@ -58,9 +59,9 @@ def main(argv):
 
     if app_name == '':
         #Wait for input from user in order to choose which apk to retreive through adb
-            app_name = raw_input('Which package do you want to investigate (you can give just the name of it)?')
+            app_name = raw_input('Which package do you want to investigate (you can give just the name of it)?\n')
             
-    
+    # Retrieve the application
     packages_list = retrieveandsavepackage.get_packages_list_from_string(app_name)
 
     package_name = retrieveandsavepackage.choose_package_from_list(packages_list)
@@ -69,19 +70,20 @@ def main(argv):
     
     retrieveandsavepackage.pull_package_from_path(package_name, package_path)
     
-    unzip_package(package_name)
+    # Depackage the app to wider the attack surface and then Repackage the app
+    repackageapp.unzip_package(package_name)
     
-    disassemble_package(package_name)
+    repackageapp.disassemble_package(package_name)
 
-    make_application_debuggable()
+    repackageapp.make_application_debuggable()
 
-    allow_backup()
+    repackageapp.allow_backup()
 
-    repackage_debuggable_application(package_name)
+    repackageapp.repackage_debuggable_application(package_name)
 
-    sign_apk(package_name)
+    repackageapp.sign_apk(package_name)
 
-    reinstall_app(package_name)
+    repackageapp.reinstall_app(package_name)
     
     #Attacks
     #test_insecure_logging()
