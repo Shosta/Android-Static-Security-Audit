@@ -1,0 +1,4 @@
+
+*.pyc
+
+PythonScript/\.vscode/\.ropeproject/
