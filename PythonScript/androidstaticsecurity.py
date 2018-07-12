@@ -138,9 +138,9 @@ def main(argv):
             app_name = arg
 
     if app_name == '':
-        #Wait for input from user in order to choose which apk to retrive through adb
-        app_name = raw_input('Which package do you want to investigate (you can give just the name of it)?')
-        
+        #Wait for input from user in order to choose which apk to retreive through adb
+            app_name = raw_input('Which package do you want to investigate (you can give just the name of it)?')
+            
     
     packages_list = get_packages_list_from_string(app_name)
 
