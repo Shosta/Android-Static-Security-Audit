@@ -8,6 +8,7 @@ import errno
 import sys
 import getopt
 import bcolors
+import retrieveandsavepackage
 
 
 def usage():
@@ -38,7 +39,7 @@ def test_insecure_logging():
     
 def main(argv):
 
-    create_attacks_folder_tree()
+    retrieveandsavepackage.create_attacks_folder_tree()
     
     try:
         opts, args = getopt.getopt(argv, "ha:", ["help", "app-name="])
@@ -61,13 +62,13 @@ def main(argv):
             app_name = raw_input('Which package do you want to investigate (you can give just the name of it)?')
             
     
-    packages_list = get_packages_list_from_string(app_name)
+    packages_list = retrieveandsavepackage.get_packages_list_from_string(app_name)
 
-    package_name = choose_package_from_list(packages_list)
+    package_name = retrieveandsavepackage.choose_package_from_list(packages_list)
     
-    package_path = get_package_path_from_package_name(package_name)
+    package_path = retrieveandsavepackage.get_package_path_from_package_name(package_name)
     
-    pull_package_from_path(package_name, package_path)
+    retrieveandsavepackage.pull_package_from_path(package_name, package_path)
     
     unzip_package(package_name)
     
