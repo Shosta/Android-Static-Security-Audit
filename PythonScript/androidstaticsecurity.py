@@ -7,17 +7,11 @@ import os
 import errno
 import sys
 import getopt
+import bcolors
+import cmdutils
+import retrieveandsavepackage
+import repackageapp
 
-
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
 
 def usage():
     print("AndroidStaticSecurity v0 - a tool to accelerate your Android application security\nassessments and take care of the boring setup.")
@@ -30,87 +24,6 @@ def usage():
     print("\nFor additional info, see https://github.com/shosta")
 
 
-def unzip_package(package_name):
-    print(bcolors.OKGREEN + "Extract package  : " + bcolors.BOLD + package_name + bcolors.ENDC + " to " + bcolors.BOLD + "/tmp/Attacks/UnzippedPackaged" + bcolors.ENDC + " folder.")
-    cmd = "unzip /tmp/Attacks/SourcePackage/" + package_name + ".apk '*' -d /tmp/Attacks/UnzippedPackaged"
-
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=None, shell=True)
-    output = process.communicate()
-    print(output[0]) # Verbose
-
-def disassemble_package(package_name):
-    """
-    Disassemble the application package using the apktool.
-    apktool must be installed on the computer.
-    """
-    print(bcolors.OKGREEN + "Disassemble package " + bcolors.ENDC + bcolors.BOLD + package_name + ".apk" + bcolors.ENDC + " using " + bcolors.BOLD + "apktool" + bcolors.ENDC)
-    cmd = "apktool d " + "/tmp/Attacks/SourcePackage/" +  package_name + ".apk" + " -f -o " + "/tmp/Attacks/DecodedPackage"
-
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=None, shell=True)
-
-    #Launch the shell command:
-    output = process.communicate()
-    print(output)
-
-def make_application_debuggable():
-    #Use sed method to add debuggable=true to the application manifest.
-    print(bcolors.OKGREEN + "Make app debuggable" + bcolors.ENDC +  " using " + bcolors.BOLD + "sed" + bcolors.ENDC + " command")
-    cmd = "sed -i -e 's/<application /<application android:debuggable=\"true\" /' /tmp/Attacks/DecodedPackage/AndroidManifest.xml"
-
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=None, shell=True)
-
-    #Launch the shell command:
-    output = process.communicate()
-    print(output)    
-
-def allow_backup():
-    #Use grep and sed to allow backup on the application.
-    print(bcolors.OKGREEN + "Allow backup on app" + bcolors.ENDC + " using " + bcolors.BOLD + "sed" + bcolors.ENDC + " command")
-    cmd = "sed -i -e 's/android:allowBackup=\"false\" / /' /tmp/Attacks/DecodedPackage/AndroidManifest.xml"
-
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=None, shell=True)
-
-    #Launch the shell command:
-    output = process.communicate()
-
-    cmd = "sed -i -e 's/<application /<application android:allowBackup=\"true\" /' /tmp/Attacks/DecodedPackage/AndroidManifest.xml"
-
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=None, shell=True)
-
-    #Launch the shell command:
-    output = process.communicate()
-    print(output[0])
-
-def repackage_debuggable_application(package_name):
-    print(bcolors.OKGREEN + "Repackage the app" + bcolors.ENDC + " using " + bcolors.BOLD + "apktool" + bcolors.ENDC)
-    cmd = "apktool b /tmp/Attacks/DecodedPackage -o /tmp/Attacks/DebuggablePackage/" + package_name + ".b.apk"
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=None, shell=True)
-
-    #Launch the shell command:
-    output = process.communicate()
-    print(output[0])
-
-def sign_apk(package_name):
-    print(bcolors.OKGREEN + "Sign the application " + bcolors.ENDC + "using " + bcolors.BOLD + "appium/signapk" + bcolors.ENDC + " tool")
-    cmd = "signapk /tmp/Attacks/DebuggablePackage/" + package_name + ".b.apk"
-    process = subprocess.Popen(["/bin/bash", "-i", "-c", cmd])
-
-    #Launch the shell command:
-    output = process.communicate()
-    print(output[0])
-
-def reinstall_app(package_name):
-    print(bcolors.OKGREEN + "Uninstall the production app from the device" + bcolors.ENDC)
-    cmd = "adb uninstall " + package_name
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=None, shell=True)
-    process.communicate()
-
-
-    print(bcolors.OKGREEN + "Reinstall the debuggable app to the device" + bcolors.ENDC)
-    cmd = "adb install /tmp/Attacks/DebuggablePackage/" + package_name + ".b.s.apk"
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=None, shell=True)
-    output = process.communicate()
-    print(output[0])
 
 
 def test_insecure_logging():
@@ -120,15 +33,14 @@ def test_insecure_logging():
 
     #from datetime import date
     cmd = "adb logcat > /tmp/Attacks/InsecureLogging/log-" + str(1)  + ".txt"
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=None, shell=True)
-    process.communicate()
-
+    cmdutils.launchcmd(cmd)
+    
     raw_input("Use the app (login, use the application\'s features). The logs are going to be located in the " + bcolors.BOLD +  "/tmp/Attacks/InsecureLogging/" + bcolors.ENDC + " folder.")
     process.kill()
     
 def main(argv):
 
-    create_attacks_folder_tree()
+    retrieveandsavepackage.create_attacks_folder_tree()
     
     try:
         opts, args = getopt.getopt(argv, "ha:", ["help", "app-name="])
@@ -147,31 +59,32 @@ def main(argv):
             app_name = arg
 
     if app_name == '':
-        #Wait for input from user in order to choose which apk to retrive through adb
-        app_name = raw_input('Which package do you want to investigate (you can give just the name of it)?')
-        
+        #Wait for input from user in order to choose which apk to retreive through adb
+            app_name = raw_input('Which package do you want to investigate (you can give just the name of it)?\n')
+            
+    # Retrieve the application
+    packages_list = retrieveandsavepackage.get_packages_list_from_string(app_name)
+
+    package_name = retrieveandsavepackage.choose_package_from_list(packages_list)
     
-    packages_list = get_packages_list_from_string(app_name)
-
-    package_name = choose_package_from_list(packages_list)
+    package_path = retrieveandsavepackage.get_package_path_from_package_name(package_name)
     
-    package_path = get_package_path_from_package_name(package_name)
+    retrieveandsavepackage.pull_package_from_path(package_name, package_path)
     
-    pull_package_from_path(package_name, package_path)
+    # Depackage the app to wider the attack surface and then Repackage the app
+    repackageapp.unzip_package(package_name)
     
-    unzip_package(package_name)
-    
-    disassemble_package(package_name)
+    repackageapp.disassemble_package(package_name)
 
-    make_application_debuggable()
+    repackageapp.make_application_debuggable()
 
-    allow_backup()
+    repackageapp.allow_backup()
 
-    repackage_debuggable_application(package_name)
+    repackageapp.repackage_debuggable_application(package_name)
 
-    sign_apk(package_name)
+    repackageapp.sign_apk(package_name)
 
-    reinstall_app(package_name)
+    repackageapp.reinstall_app(package_name)
     
     #Attacks
     #test_insecure_logging()
