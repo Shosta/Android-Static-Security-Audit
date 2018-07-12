@@ -94,14 +94,16 @@ You can use Bettercap to monitor the UDP traffic.
 
 
 #### 5. Repackage and sign the app:
-Repackage the app:
+1. Repackage the app:
+```
 apk tool b -o app.package.name.apk localAppFolder/
+```
 
-Generate a signing key :
+2. Generate a signing key :
 ```
 keytool -genkey -v -keystore resign.keystore -alias alias_name -keyalg RSA -keysize 2048 -validity 10000
 ```
-then sign the app with it : 
+3. then sign the app with it : 
 ```
 jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore resign.keystore app.package.name.apk alias_name
 ```
