@@ -31,9 +31,8 @@ def test_insecure_logging():
 
     #from datetime import date
     cmd = "adb logcat > /tmp/Attacks/InsecureLogging/log-" + str(1)  + ".txt"
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=None, shell=True)
-    process.communicate()
-
+    cmdutils.launchcmd(cmd)
+    
     raw_input("Use the app (login, use the application\'s features). The logs are going to be located in the " + bcolors.BOLD +  "/tmp/Attacks/InsecureLogging/" + bcolors.ENDC + " folder.")
     process.kill()
     
