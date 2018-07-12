@@ -8,6 +8,7 @@ import errno
 import sys
 import getopt
 import bcolors
+import cmdutils
 import retrieveandsavepackage
 import repackageapp
 
