@@ -11,7 +11,9 @@ import bcolors
 import cmdutils
 import retrieveandsavepackage
 import repackageapp
+import variables
 
+import subprocess
 
 def usage():
     print("AndroidStaticSecurity v0 - a tool to accelerate your Android application security\nassessments and take care of the boring setup.")
@@ -24,20 +26,6 @@ def usage():
     print("\nFor additional info, see https://github.com/shosta")
 
 
-
-
-def test_insecure_logging():
-    #Launch logcat
-    #Wait for input from the user
-    print(bcolors.OKGREEN + "Test Insecure Logging" + bcolors.ENDC)
-
-    #from datetime import date
-    cmd = "adb logcat > /tmp/Attacks/InsecureLogging/log-" + str(1)  + ".txt"
-    cmdutils.launchcmd(cmd)
-    
-    raw_input("Use the app (login, use the application\'s features). The logs are going to be located in the " + bcolors.BOLD +  "/tmp/Attacks/InsecureLogging/" + bcolors.ENDC + " folder.")
-    process.kill()
-    
 def main(argv):
 
     retrieveandsavepackage.create_attacks_folder_tree()
@@ -51,7 +39,7 @@ def main(argv):
     app_name = '' 
 
     for opt, arg in opts:
-        if opt in ["-h", "--help"]:
+        if opt in ("-h", "--help"):
             usage()
             sys.exit(2)
             #raise Exception('Usage displayed, stop application')
@@ -67,7 +55,7 @@ def main(argv):
     if app_name == '':
         #Wait for input from user in order to choose which apk to retreive through adb
             app_name = raw_input('Which package do you want to investigate (you can give just the name of it)?\n')
-            
+    '''        
     # Retrieve the application
     packages_list = retrieveandsavepackage.get_packages_list_from_string(app_name)
 
@@ -91,9 +79,10 @@ def main(argv):
     repackageapp.sign_apk(package_name)
 
     repackageapp.reinstall_app(package_name)
-    
+    '''
     #Attacks
-    #test_insecure_logging()
+    from attacks import insecurelogging
+    insecurelogging.test_insecure_logging()
 
 if __name__ == '__main__':   
     main(sys.argv[1:])
